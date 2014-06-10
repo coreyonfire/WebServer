@@ -184,3 +184,7 @@ UpgradeLog*.htm
 
 # Microsoft Fakes
 FakesAssemblies/
+
+WebServer.sln
+WebServer/App.config
+WebServer/WebServer.csproj
