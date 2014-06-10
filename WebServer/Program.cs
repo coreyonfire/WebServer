@@ -17,7 +17,7 @@ namespace WebServer
     {
         private TcpListener myListener;
         private int port = 7070;
-        private String serverRoot = @"C:\_WebServer\";
+        private String serverRoot = Directory.GetCurrentDirectory() + "\\";
 
         public MyWebServer()
         {
