@@ -104,7 +104,7 @@ namespace WebServer
                         line = line.ToLower();
 
                         virtualDir = line.Substring(0, startPos);
-                        realDir = line.Substring(startPos + 1);
+                        realDir = serverRoot + line.Substring(startPos + 1);
 
                         if (dirName.Equals(virtualDir))
                         {
@@ -166,7 +166,7 @@ namespace WebServer
                 Console.WriteLine("An exception has occured: " + e.ToString());
             }
             if (fileExt.Equals(mimeExt))
-                return mimeExt;
+                return mimeType;
             else
                 return "";
         }
@@ -248,11 +248,22 @@ namespace WebServer
                 if (mySocket.Connected)
                 {
                     Console.WriteLine("\nClient Connected!\n=================\nClient IP: {0}\n", mySocket.RemoteEndPoint);
+                    mySocket.ReceiveTimeout = 4000;
+                    mySocket.SendTimeout = 4000;
 
                     // Make a byte array and recieve the data
                     Byte[] receive = new Byte[1024];
-                    int i = mySocket.Receive(receive, receive.Length, 0);
-
+                    try
+                    {
+                        int i = mySocket.Receive(receive, receive.Length, 0);
+                    }
+                    catch (System.Net.Sockets.SocketException e)
+                    {
+                        // handle it...gracefully, i guess
+                        Console.WriteLine("TIMEOUT. " );
+                        mySocket.Close();
+                        continue;
+                    }
                     // convert byte to string
                     string buffer = Encoding.ASCII.GetString(receive).Trim();
 
@@ -262,7 +273,9 @@ namespace WebServer
                     {
                         Console.WriteLine("Only GET is supported :(");
                         mySocket.Close();
-                        return;
+
+                        continue;
+                        //return;
                     }
 
 
@@ -304,6 +317,12 @@ namespace WebServer
                     {
                         // get the virtual dir
                         localDir = getLocalPath(serverRoot, dirName);
+
+                        // make sure dir ends with slash
+                        if (!localDir.EndsWith("\\"))
+                        {
+                            localDir += "\\";
+                        }
                     }
 
                     Console.WriteLine("Directory requested: {0}", dirName);
@@ -321,7 +340,9 @@ namespace WebServer
 
                         mySocket.Close();
 
-                        return;
+
+                        continue;
+                        //return;
                     }
 
                     // ------------------
@@ -340,7 +361,9 @@ namespace WebServer
                             sendHeader(httpVersion, "", errorMessage.Length, " 404 Not Found", ref mySocket);
                             sendToBrowser(errorMessage, ref mySocket);
                             mySocket.Close();
-                            return;
+
+                            continue;
+                            //return;
                         }
                     }
 
